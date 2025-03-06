@@ -20,4 +20,14 @@ async def main() -> None:
     await application.run_polling()
 if __name__ == '__main__':
     import asyncio
-    asyncio.run(main())
+    try:
+        # 尝试运行事件循环
+        asyncio.run(main())
+    except RuntimeError as e:
+        if str(e) == "This event loop is already running":
+            # 如果事件循环已经在运行，直接调用 main()
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(main())
+        else:
+            # 其他错误，抛出异常
+            raise
