@@ -54,3 +54,24 @@ def load_private_messages(user_id, max_rounds):
     messages = cursor.fetchall()
     conn.close()
     return [{"role": role, "content": content} for role, content in messages]
+def init_db():
+    """初始化数据库，仅在表不存在时创建表"""
+    conn = sqlite3.connect('chat_history.db')
+    cursor = conn.cursor()
+    # 检查 private_messages 表是否存在
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='private_messages'")
+    if not cursor.fetchone():
+        # 创建 private_messages 表
+        cursor.execute('''
+            CREATE TABLE private_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                username TEXT,
+                role TEXT,
+                content TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        logger.info("private_messages 表已创建！")
+    conn.commit()
+    conn.close()
