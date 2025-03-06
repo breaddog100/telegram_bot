@@ -53,6 +53,7 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
                     {"role": "user", "content": question}
                 ]
         else:
+            # 如果没有 @bot 或引用 bot 的发言，直接返回
             return
     # 调用 Deepseek API 并处理响应
     try:
