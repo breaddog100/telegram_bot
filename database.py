@@ -1,4 +1,8 @@
 import sqlite3
+import logging
+# 配置日志
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 def get_group_table_name(chat_id):
     """将群组 ID 转换为合法的表名"""
     return f"group_messages_{abs(chat_id)}"
