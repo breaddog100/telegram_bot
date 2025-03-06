@@ -1,3 +1,4 @@
+```
 telegram_bot/
 │
 ├── bot.py                # 主程序入口
@@ -7,3 +8,4 @@ telegram_bot/
 ├── utils.py              # 工具函数（如日志、表名处理等）
 ├── config.py             # 配置文件（如环境变量加载）
 └── models.py             # 数据模型（可选）
+```
