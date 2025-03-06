@@ -1,25 +1,32 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-from database import save_group_message, save_private_message, load_private_messages
+from database import save_group_message, save_private_message, load_private_messages, init_db
 from api_client import call_deepseek_api
-
+import logging
+# 配置日志
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 async def start(update: Update, context: CallbackContext) -> None:
+    """处理 /start 命令"""
     await update.message.reply_text('Hi, I‘m Big Dog。 你好，我是大狗。')
 async def handle_message(update: Update, context: CallbackContext) -> None:
-    init_db()
-    
+    """处理用户消息"""
     chat_id = update.message.chat_id
     user_id = update.message.from_user.id
     username = update.message.from_user.username
     content = update.message.text
-    
+    # 根据聊天类型处理消息
     if update.message.chat.type == "private":
+        # 保存私聊消息
         save_private_message(user_id, username, "user", content)
+        # 加载历史消息
         MAX_HISTORY_ROUNDS = 5
         messages = load_private_messages(user_id, MAX_HISTORY_ROUNDS)
         messages.append({"role": "user", "content": content})
     else:
+        # 保存群聊消息
         save_group_message(chat_id, user_id, username, "user", content)
+        # 处理提及机器人的消息
         if update.message.text and '@' + context.bot.username in update.message.text:
             question = update.message.text.replace('@' + context.bot.username, '').strip()
             if update.message.reply_to_message:
@@ -47,13 +54,14 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
                 ]
         else:
             return
-    
+    # 调用 Deepseek API 并处理响应
     try:
         response = call_deepseek_api(messages)
         if update.message.chat.type == "private":
             save_private_message(user_id, username, "assistant", response)
         else:
             save_group_message(chat_id, user_id, username, "assistant", response)
+        # 分段发送长消息
         max_length = 4096
         for i in range(0, len(response), max_length):
             chunk = response[i:i + max_length]
