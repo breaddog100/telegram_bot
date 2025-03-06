@@ -17,7 +17,12 @@ async def main() -> None:
     # 添加消息处理器
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     # 启动 Bot
-    await application.run_polling()
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling()
+    # 保持程序运行
+    while True:
+        await asyncio.sleep(1)
 if __name__ == '__main__':
     import asyncio
     loop = asyncio.get_event_loop()
@@ -26,4 +31,5 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     finally:
+        loop.run_until_complete(application.stop())
         loop.close()
