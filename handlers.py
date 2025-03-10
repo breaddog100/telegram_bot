@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 from database import save_group_message, save_private_message, load_private_messages, init_db
-from api_client import call_deepseek_api
+from api_client import call_api  # 使用统一的 API 调用函数
 import logging
 # 配置日志
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -55,9 +55,9 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
         else:
             # 如果没有 @bot 或引用 bot 的发言，直接返回
             return
-    # 调用 Deepseek API 并处理响应
+    # 调用大模型 API 并处理响应
     try:
-        response = call_deepseek_api(messages)
+        response = call_api(messages)  # 使用统一的 API 调用函数
         if update.message.chat.type == "private":
             save_private_message(user_id, username, "assistant", response)
         else:
@@ -68,5 +68,5 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
             chunk = response[i:i + max_length]
             await update.message.reply_text(chunk)
     except Exception as e:
-        logger.error(f"调用Deepseek API时发生错误: {e}")
+        logger.error(f"调用大模型 API 时发生错误: {e}")
         await update.message.reply_text('请求失败，请稍后再试。')
