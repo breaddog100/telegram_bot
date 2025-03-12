@@ -11,15 +11,8 @@ telegram_bot/
 
 初始化
 
-下载并解压最新的代码
-
-修改目录名称：
-mv telegram_bot-main/ telegram_bot
-
-初始化秘钥：
-vi config.py
-TELEGRAM_BOT_TOKEN = '123456789:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-ARK_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+克隆代码库
+git clone https://github.com/breaddog100/telegram_bot.git
 
 更新系统
 sudo apt update && sudo apt upgrade -y
@@ -44,19 +37,16 @@ python3.10 -m venv venv
 source venv/bin/activate
 
 安装Python依赖
-pip install 'volcengine-python-sdk[ark]'
 pip install -r requirements.txt
-
-cat requirements.txt
-python-dotenv
-python-telegram-bot
-nest-asyncio
+cut -d= -f1 requirements.txt | xargs -n1 pip install --upgrade
+pip freeze > requirements.txt
 
 pip list
 
 配置.env
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 ARK_API_KEY=your_ark_api_key
+...
 
 初始化数据库
 python database.py
