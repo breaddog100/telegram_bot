@@ -40,7 +40,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 cut -d= -f1 requirements.txt | xargs -n1 pip install --upgrade
 pip freeze > requirements.txt
-
 pip list
 
 配置.env
@@ -48,17 +47,12 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 ARK_API_KEY=your_ark_api_key
 ...
 
-初始化数据库
-python database.py
-验证数据库
-sqlite3 chat_history.db
-查看表结构
-.tables
-
 启动bot
 python bot.py
 
-
-python bot.py
+查询数据库
+sqlite3 chat_history.db
+查看表结构
+.tables
 
 ```

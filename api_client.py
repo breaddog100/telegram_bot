@@ -15,7 +15,23 @@ elif MODEL_PROVIDER == "groq":
     client = groq.Client(api_key=GROQ_API_KEY)
 else:
     raise ValueError(f"不支持的模型提供商: {MODEL_PROVIDER}")
-def call_api(messages):
+def call_api(client):
+    messages = [
+        {
+            "role": "user",
+            "content": get_user_message()  # 假设这是获取用户消息的函数
+        }
+    ]
+    print(f"调用API时的messages参数: {messages}")  # 调试输出
+    try:
+        response = client.chat.completions.create(
+            model="your_model_name",  # 替换为实际的模型名称
+            messages=messages
+        )
+        return response
+    except Exception as e:
+        print(f"调用API时出错: {e}")
+        return None
     """调用大模型 API"""
     try:
         # 打印请求的上下文（用于调试）
