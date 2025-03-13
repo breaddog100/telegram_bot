@@ -1,6 +1,6 @@
 import logging
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from handlers import start, handle_message
+from api_client import client, handle_message
 from config import TELEGRAM_BOT_TOKEN
 from database import init_db
 import asyncio
