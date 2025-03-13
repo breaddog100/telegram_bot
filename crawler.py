@@ -44,7 +44,12 @@ def fetch_page_content(url):
             # 若响应头中没有字符集信息，使用 chardet 检测
             detected = chardet.detect(response.content)
             response.encoding = detected['encoding']
-        soup = BeautifulSoup(response.text, 'html.parser')
+        # 去除 BOM（如果存在）
+        content = response.content
+        if content.startswith(b'\xef\xbb\xbf'):
+            content = content[3:]
+        # 使用 response.content 并指定字符编码
+        soup = BeautifulSoup(content, 'html.parser', from_encoding=response.encoding)
         # 提取页面的文本内容
         text = soup.get_text()
         return text
