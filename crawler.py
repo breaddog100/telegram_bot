@@ -50,6 +50,7 @@ def fetch_page_content(url):
         soup = BeautifulSoup(content, 'lxml')
         # 提取页面的文本内容
         text = soup.get_text()
+        text = text[:1000]
         # 去掉空行
         text = "\n".join(line for line in text.splitlines() if line.strip())
         return text
