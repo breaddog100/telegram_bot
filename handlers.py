@@ -15,13 +15,6 @@ async def start(update: Update, context: CallbackContext) -> None:
     """处理 /start 命令"""
     await update.message.reply_text('Hi, I‘m Big Dog。 你好，我是大狗。')
 
-def detect_language(text):
-    """检测文本语言"""
-    if any('\u4e00' <= char <= '\u9fff' for char in text):
-        return "zh"
-    else:
-        return "en"
-
 async def enable_search_command(update: Update, context: CallbackContext) -> None:
     """启用搜索功能"""
     global ENABLE_SEARCH
@@ -40,13 +33,6 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
     username = update.message.from_user.username
     content = update.message.text
-
-    # 检测用户输入的语言
-    language = detect_language(content)
-    if language == "zh":
-        language_prompt = "请用中文直接回答以下问题，不要输出思考过程。"
-    else:
-        language_prompt = "Please answer the following question directly in English, without explaining the thought process."
 
     # 根据聊天类型处理消息
     if update.message.chat.type == "private":
@@ -110,8 +96,8 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
 
     # 调用大模型 API 并处理响应
     try:
-        # 根据语言要求插入提示词
-        messages.insert(0, {"role": "user", "content": language_prompt})
+        # 直接要求用中文回答
+        messages.insert(0, {"role": "user", "content": "请用中文直接回答以下问题，不要输出思考过程。"})
         response = call_api(messages)  # 使用统一的 API 调用函数
         if update.message.chat.type == "private":
             save_private_message(user_id, username, "assistant", response)
