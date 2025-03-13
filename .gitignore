@@ -1,0 +1,33 @@
+# 忽略虚拟环境目录
+venv/
+env/
+.venv/
+.env
+resource/images
+
+chat_history.db
+
+# 忽略 Python 缓存和字节码文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 忽略pip安装包
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 忽略测试相关文件（根据项目结构调整）
+tests/
+*.test
+*.spec
+
+# 忽略构建输出和日志文件
+build/
+dist/
+*.log
+
+# 忽略IDE和编辑器配置（根据你的编辑器选择）
+.idea/          # PyCharm
+.vscode/        # VS Code
+*.sublime-workspace # Sublime Text
+*.suo            # Visual Studio
