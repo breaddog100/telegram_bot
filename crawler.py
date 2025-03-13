@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import chardet
 
 def get_search_results(query_url):
     """
@@ -34,6 +35,15 @@ def fetch_page_content(url):
     try:
         response = requests.get(url)
         response.raise_for_status()
+        # 尝试从响应头中获取字符集
+        content_type = response.headers.get('Content-Type')
+        if content_type and 'charset=' in content_type:
+            charset = content_type.split('charset=')[-1]
+            response.encoding = charset
+        else:
+            # 若响应头中没有字符集信息，使用 chardet 检测
+            detected = chardet.detect(response.content)
+            response.encoding = detected['encoding']
         soup = BeautifulSoup(response.text, 'html.parser')
         # 提取页面的文本内容
         text = soup.get_text()
