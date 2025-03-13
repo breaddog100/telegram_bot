@@ -16,6 +16,7 @@ git clone https://github.com/breaddog100/telegram_bot.git
 
 更新系统
 sudo apt update && sudo apt upgrade -y
+sudo apt install build-essential
 
 安装python3.10
 sudo apt install software-properties-common -y

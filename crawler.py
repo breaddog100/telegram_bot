@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import chardet
+from charset_normalizer import from_bytes
 
 def get_search_results(query_url):
     """
@@ -35,21 +35,16 @@ def fetch_page_content(url):
     try:
         response = requests.get(url)
         response.raise_for_status()
-        # 尝试从响应头中获取字符集
-        content_type = response.headers.get('Content-Type')
-        if content_type and 'charset=' in content_type:
-            charset = content_type.split('charset=')[-1]
-            response.encoding = charset
-        else:
-            # 若响应头中没有字符集信息，使用 chardet 检测
-            detected = chardet.detect(response.content)
-            response.encoding = detected['encoding']
+        # 使用 charset-normalizer 检测编码
+        detected = from_bytes(response.content).best()
+        if detected:
+            response.encoding = detected.encoding
         # 去除 BOM（如果存在）
         content = response.content
         if content.startswith(b'\xef\xbb\xbf'):
             content = content[3:]
-        # 使用 response.content 并指定字符编码
-        soup = BeautifulSoup(content, 'html.parser', from_encoding=response.encoding)
+        # 使用 lxml 解析器
+        soup = BeautifulSoup(content, 'lxml')
         # 提取页面的文本内容
         text = soup.get_text()
         return text
