@@ -34,6 +34,11 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     username = update.message.from_user.username
     content = update.message.text
 
+    # 如果用户输入为空，直接返回
+    if not content:
+        await update.message.reply_text("请输入有效的内容。")
+        return
+
     # 根据聊天类型处理消息
     if update.message.chat.type == "private":
         # 保存私聊消息
@@ -78,7 +83,7 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     # 如果启用搜索功能，执行搜索逻辑
     if ENABLE_SEARCH:
         # 提示用户正在查询
-        await update.message.reply_text("等下，我去查查...")
+        await update.message.reply_text("我正在上网查询，需要一点时间，请等待。")
         # 调用自定义的searxng搜索服务获取相关内容
         query_url = f"http://198.135.50.173:56880/search?q={requests.utils.quote(content)}&format=json"
         search_result = requests.get(query_url).json()
@@ -100,6 +105,10 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     try:
         # 直接要求用中文回答
         messages.insert(0, {"role": "user", "content": "请用中文直接回答以下问题，不要输出思考过程。"})
+        
+        # 过滤掉 content 为 None 或空字符串的消息
+        messages = [msg for msg in messages if msg.get("content")]
+        
         response = call_api(messages)  # 使用统一的 API 调用函数
         if update.message.chat.type == "private":
             save_private_message(user_id, username, "assistant", response)
@@ -113,3 +122,4 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     except Exception as e:
         logger.error(f"调用大模型 API 时发生错误: {e}")
         await update.message.reply_text('请求失败，请稍后再试。')
+
