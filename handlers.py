@@ -62,35 +62,67 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
             # 如果没有 @bot 或引用 bot 的发言，直接返回
             return
 
-    # 调用自定义的searxng搜索服务获取相关内容
-    query_url = f"http://198.135.50.173:56880/search?q={requests.utils.quote(content)}&format=json"
-    search_result = requests.get(query_url).json()
-    if search_result:
-        top_10_links = get_top_10_links(search_result)
-        page_contents = []
-        for link in top_10_links:
-            logger.info(f"正在获取 {link} 的内容...")
-            page_content = fetch_page_content(link)
-            if page_content:
-                page_contents.append(page_content)
-        # 将页面内容拼接成一个字符串
-        combined_content = "\n\n".join(page_contents)
-        # 将用户问题和页面内容结合
-        prompt = f"用户问题：{content}\n\n相关页面内容：{combined_content}"
-        messages.append({"role": "user", "content": prompt})
-
-    # 调用大模型 API 并处理响应
+    # 第一步：让大模型判断是否需要搜索
     try:
-        response = call_api(messages)  # 使用统一的 API 调用函数
-        if update.message.chat.type == "private":
-            save_private_message(user_id, username, "assistant", response)
-        else:
-            save_group_message(chat_id, user_id, username, "assistant", response)
-        # 分段发送长消息
-        max_length = 4096
-        for i in range(0, len(response), max_length):
-            chunk = response[i:i + max_length]
-            await update.message.reply_text(chunk)
+        # 构造判断是否需要搜索的提示
+        prompt = f"""
+        用户问题：{content}
+
+        请根据以下规则判断是否需要联网搜索：
+        1. 如果问题简单、常见或无需额外信息即可回答，请回答 '否'。
+        2. 如果问题复杂、需要最新信息或需要具体数据支持，请回答 '是'。
+
+        请回答 '是' 或 '否'。
+        """
+        need_search_response = call_api([{"role": "user", "content": prompt}])
+
+        # 解析大模型的回答
+        if "否" in need_search_response:
+            # 不需要搜索，直接生成回答
+            final_response = call_api(messages)
+            if update.message.chat.type == "private":
+                save_private_message(user_id, username, "assistant", final_response)
+            else:
+                save_group_message(chat_id, user_id, username, "assistant", final_response)
+            await update.message.reply_text(final_response)
+            return
     except Exception as e:
         logger.error(f"调用大模型 API 时发生错误: {e}")
+        await update.message.reply_text('请求失败，请稍后再试。')
+        return
+
+    # 第二步：需要搜索，执行搜索逻辑
+    try:
+        # 调用自定义的searxng搜索服务获取相关内容
+        query_url = f"http://198.135.50.173:56880/search?q={requests.utils.quote(content)}&format=json"
+        search_result = requests.get(query_url).json()
+        if search_result:
+            top_10_links = get_top_10_links(search_result)
+            page_contents = []
+            for link in top_10_links:
+                logger.info(f"正在获取 {link} 的内容...")
+                page_content = fetch_page_content(link)
+                if page_content:
+                    page_contents.append(page_content)
+            # 将页面内容拼接成一个字符串
+            combined_content = "\n\n".join(page_contents)
+            # 将用户问题和页面内容结合
+            prompt = f"用户问题：{content}\n\n相关页面内容：{combined_content}"
+            messages.append({"role": "user", "content": prompt})
+
+            # 调用大模型生成最终回答
+            final_response = call_api(messages)
+            if update.message.chat.type == "private":
+                save_private_message(user_id, username, "assistant", final_response)
+            else:
+                save_group_message(chat_id, user_id, username, "assistant", final_response)
+            # 分段发送长消息
+            max_length = 4096
+            for i in range(0, len(final_response), max_length):
+                chunk = final_response[i:i + max_length]
+                await update.message.reply_text(chunk)
+        else:
+            await update.message.reply_text("未找到相关结果。")
+    except Exception as e:
+        logger.error(f"调用大模型 API 或搜索引擎时发生错误: {e}")
         await update.message.reply_text('请求失败，请稍后再试。')
