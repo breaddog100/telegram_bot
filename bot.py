@@ -1,9 +1,10 @@
 import logging
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from api_client import client, handle_message
 from config import TELEGRAM_BOT_TOKEN
 from database import init_db
 import asyncio
+from handlers import start, handle_message  # 导入 start 和 handle_message 函数
+
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,  # 设置日志级别为 INFO
@@ -14,6 +15,7 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
 async def main() -> None:
     # 初始化数据库
     init_db()
@@ -31,6 +33,7 @@ async def main() -> None:
     # 保持程序运行
     while True:
         await asyncio.sleep(1)
+
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     try:
