@@ -15,6 +15,8 @@ DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-r1-250120')  # 默认模�
 # Groq API 配置
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')  # Groq API 的密钥
 GROQ_MODEL = os.getenv('GROQ_MODEL', 'qwen-2.5-32b')  # 默认模型 ID
+# 是否启用搜索功能
+ENABLE_SEARCH = False  # 默认禁用搜索功能
 # 数据库配置
 DATABASE_FILE = os.getenv('DATABASE_FILE', 'bot.db')  # 默认数据库文件路径
 # 日志配置

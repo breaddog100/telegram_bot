@@ -5,7 +5,7 @@ from database import init_db
 import asyncio
 
 # 关键修复点：确保正确导入
-from handlers import start, handle_message
+from handlers import start, handle_message, enable_search_command, disable_search_command
 
 # 配置日志
 logging.basicConfig(
@@ -27,6 +27,8 @@ async def main() -> None:
     
     # 添加命令处理器
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("enable_search", enable_search_command))
+    application.add_handler(CommandHandler("disable_search", disable_search_command))
     
     # 添加消息处理器
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
