@@ -23,7 +23,7 @@ def get_top_10_links(result):
     :return: 前 10 个页面链接列表
     """
     sorted_results = sorted(result['results'], key=lambda x: x.get('score', 0), reverse=True)
-    links = [item['url'] for item in sorted_results[:10]]
+    links = [item['url'] for item in sorted_results[:3]]
     return links
 
 def fetch_page_content(url):
