@@ -2,19 +2,25 @@ from telegram import Update
 from telegram.ext import CallbackContext
 from database import save_group_message, save_private_message, load_private_messages, init_db
 from api_client import call_api  # 使用统一的 API 调用函数
+from crawler import get_search_results, get_top_10_links, fetch_page_content
 import logging
+import requests
+
 # 配置日志
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 async def start(update: Update, context: CallbackContext) -> None:
     """处理 /start 命令"""
     await update.message.reply_text('Hi, I‘m Big Dog。 你好，我是大狗。')
+
 async def handle_message(update: Update, context: CallbackContext) -> None:
     """处理用户消息"""
     chat_id = update.message.chat_id
     user_id = update.message.from_user.id
     username = update.message.from_user.username
     content = update.message.text
+
     # 根据聊天类型处理消息
     if update.message.chat.type == "private":
         # 保存私聊消息
@@ -55,6 +61,24 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
         else:
             # 如果没有 @bot 或引用 bot 的发言，直接返回
             return
+
+    # 调用搜索引擎获取相关内容
+    query_url = f"http://198.135.50.173:56880/search?q={requests.utils.quote(content)}&format=json"
+    search_result = get_search_results(query_url)
+    if search_result:
+        top_10_links = get_top_10_links(search_result)
+        page_contents = []
+        for link in top_10_links:
+            logger.info(f"正在获取 {link} 的内容...")
+            page_content = fetch_page_content(link)
+            if page_content:
+                page_contents.append(page_content)
+        # 将页面内容拼接成一个字符串
+        combined_content = "\n\n".join(page_contents)
+        # 将用户问题和页面内容结合
+        prompt = f"用户问题：{content}\n\n相关页面内容：{combined_content}"
+        messages.append({"role": "user", "content": prompt})
+
     # 调用大模型 API 并处理响应
     try:
         response = call_api(messages)  # 使用统一的 API 调用函数

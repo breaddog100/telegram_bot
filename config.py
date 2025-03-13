@@ -7,7 +7,7 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("请设置环境变量 TELEGRAM_BOT_TOKEN")
 # 选择使用的大模型（可选：deepseek 或 groq）
-MODEL_PROVIDER = os.getenv('MODEL_PROVIDER', 'deepseek')  # 默认使用 deepseek
+MODEL_PROVIDER = os.getenv('MODEL_PROVIDER', 'groq')  # 默认使用 deepseek
 # Deepseek API 配置
 DEEPSEEK_API_URL = os.getenv('DEEPSEEK_API_URL')  # Deepseek API 的 URL
 ARK_API_KEY = os.getenv('ARK_API_KEY')  # Deepseek API 的密钥

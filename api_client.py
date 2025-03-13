@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 import os
 from config import MODEL_PROVIDER, DEEPSEEK_API_URL, ARK_API_KEY, DEEPSEEK_MODEL, GROQ_API_KEY, GROQ_MODEL
+from crawler import get_search_results, get_top_10_links, fetch_page_content
 
 # 加载环境变量
 load_dotenv()
@@ -24,42 +25,13 @@ elif MODEL_PROVIDER == "groq":
 else:
     raise ValueError(f"不支持的模型提供商: {MODEL_PROVIDER}")
 
-# 从环境变量中获取 Google Custom Search API 配置
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-GOOGLE_CX = os.getenv('GOOGLE_CX')
-
-def search_google(query):
-    """
-    使用 Google Custom Search API 进行搜索
-    :param query: 搜索查询字符串
-    :return: 搜索结果的文本摘要
-    """
-    url = f"https://www.googleapis.com/customsearch/v1?key={GOOGLE_API_KEY}&cx={GOOGLE_CX}&q={query}"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        results = response.json()
-        if 'items' in results:
-            return ' '.join([item['snippet'] for item in results['items']])
-        else:
-            return "未找到相关结果。"
-    except requests.RequestException as e:
-        logger.error(f"搜索时出错: {e}")
-        return "搜索时出错，请稍后再试。"
-
-def call_api(client, message):
+def call_api(client, messages):
     """
     调用大模型 API
     :param client: 模型客户端
-    :param message: 用户消息
+    :param messages: 消息列表，包含用户问题和搜索引擎结果
     :return: 模型生成的回答
     """
-    messages = [
-        {
-            "role": "user",
-            "content": message
-        }
-    ]
     logger.info(f"请求上下文: {messages}")
     try:
         # 根据配置调用不同的 API
@@ -86,7 +58,24 @@ def handle_message(client, message):
     :param message: 用户消息
     :return: 回答内容
     """
-    search_result = search_google(message)
-    # 将搜索结果作为上下文，让模型总结回答
-    summary_query = f"请总结以下搜索结果来回答问题 '{message}': {search_result}"
-    return call_api(client, summary_query)
+    # 调用 SearXNG 搜索引擎获取相关内容
+    query_url = f"http://198.135.50.173:56880/search?q={requests.utils.quote(message)}&format=json"
+    search_result = get_search_results(query_url)
+    if search_result:
+        top_10_links = get_top_10_links(search_result)
+        page_contents = []
+        for link in top_10_links:
+            logger.info(f"正在获取 {link} 的内容...")
+            page_content = fetch_page_content(link)
+            if page_content:
+                page_contents.append(page_content)
+        # 将页面内容拼接成一个字符串
+        combined_content = "\n\n".join(page_contents)
+        # 将用户问题和页面内容结合
+        messages = [
+            {"role": "user", "content": message},
+            {"role": "user", "content": f"相关页面内容：{combined_content}"}
+        ]
+        return call_api(client, messages)
+    else:
+        return "未找到相关结果。"
