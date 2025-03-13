@@ -44,9 +44,9 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     # 检测用户输入的语言
     language = detect_language(content)
     if language == "zh":
-        language_prompt = "请用中文回答以下问题。"
+        language_prompt = "请用中文直接回答以下问题，不要输出思考过程。"
     else:
-        language_prompt = "Please answer the following question in English."
+        language_prompt = "Please answer the following question directly in English, without explaining the thought process."
 
     # 根据聊天类型处理消息
     if update.message.chat.type == "private":
@@ -105,7 +105,7 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
             # 将页面内容拼接成一个字符串
             combined_content = "\n\n".join(page_contents)
             # 将用户问题和页面内容结合
-            prompt = f"用户问题：{content}\n\n相关页面内容：{combined_content}"
+            prompt = f"根据以下信息回答问题：{combined_content}\n\n问题：{content}"
             messages.append({"role": "user", "content": prompt})
 
     # 调用大模型 API 并处理响应
