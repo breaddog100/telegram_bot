@@ -1,39 +1,3 @@
-from telegram import Update
-from telegram.ext import CallbackContext
-from database import save_group_message, save_private_message, load_private_messages, init_db
-from api_client import call_api  # 使用统一的 API 调用函数
-from crawler import get_top_10_links, fetch_page_content
-import logging
-import requests
-from config import ENABLE_SEARCH  # 导入开关配置
-
-# 配置日志
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-async def start(update: Update, context: CallbackContext) -> None:
-    """处理 /start 命令"""
-    await update.message.reply_text('Hi, I‘m Big Dog。 你好，我是大狗。')
-
-def detect_language(text):
-    """检测文本语言"""
-    if any('\u4e00' <= char <= '\u9fff' for char in text):
-        return "zh"
-    else:
-        return "en"
-
-async def enable_search_command(update: Update, context: CallbackContext) -> None:
-    """启用搜索功能"""
-    global ENABLE_SEARCH
-    ENABLE_SEARCH = True
-    await update.message.reply_text("搜索功能已启用。")
-
-async def disable_search_command(update: Update, context: CallbackContext) -> None:
-    """禁用搜索功能"""
-    global ENABLE_SEARCH
-    ENABLE_SEARCH = False
-    await update.message.reply_text("搜索功能已禁用。")
-
 async def handle_message(update: Update, context: CallbackContext) -> None:
     """处理用户消息"""
     chat_id = update.message.chat_id
