@@ -14,7 +14,7 @@ ARK_API_KEY = os.getenv('ARK_API_KEY')  # Deepseek API 的密钥
 DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-r1-250120')  # 默认模型 ID
 # Groq API 配置
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')  # Groq API 的密钥
-GROQ_MODEL = os.getenv('GROQ_MODEL', 'qwen-2.5-32b')  # 默认模型 ID
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'deepseek-r1-distill-qwen-32b')  # 默认模型 ID
 # 是否启用搜索功能
 ENABLE_SEARCH = False  # 默认禁用搜索功能
 # 数据库配置

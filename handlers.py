@@ -77,6 +77,8 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
 
     # 如果启用搜索功能，执行搜索逻辑
     if ENABLE_SEARCH:
+        # 提示用户正在查询
+        await update.message.reply_text("等下，我去查查...")
         # 调用自定义的searxng搜索服务获取相关内容
         query_url = f"http://198.135.50.173:56880/search?q={requests.utils.quote(content)}&format=json"
         search_result = requests.get(query_url).json()
@@ -97,7 +99,7 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     # 调用大模型 API 并处理响应
     try:
         # 直接要求用中文回答
-        messages.insert(0, {"role": "system", "content": "请用中文直接回答以下问题，不要输出思考过程。"})
+        messages.insert(0, {"role": "user", "content": "请用中文直接回答以下问题，不要输出思考过程。"})
         response = call_api(messages)  # 使用统一的 API 调用函数
         if update.message.chat.type == "private":
             save_private_message(user_id, username, "assistant", response)
