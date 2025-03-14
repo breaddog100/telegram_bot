@@ -6,6 +6,14 @@ from crawler import get_top_10_links, fetch_page_content
 import logging
 import requests
 from config import ENABLE_SEARCH  # 导入开关配置
+from dotenv import load_dotenv
+import os
+
+# 加载环境变量
+load_dotenv()
+
+# 从环境变量获取搜索服务的 URL
+QUERY_URL = os.getenv('QUERY_URL')
 
 # 配置日志
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -83,9 +91,9 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     # 如果启用搜索功能，执行搜索逻辑
     if ENABLE_SEARCH:
         # 提示用户正在查询
-        await update.message.reply_text("我正在上网查询，需要一点时间，请等待。")
-        # 调用自定义的searxng搜索服务获取相关内容
-        query_url = f"http://198.135.50.173:56880/search?q={requests.utils.quote(content)}&format=json"
+        await update.message.reply_text("等下，我去查查...")
+        # 从环境变量获取查询 URL 并格式化
+        query_url = QUERY_URL.format(requests.utils.quote(content))
         search_result = requests.get(query_url).json()
         if search_result:
             top_10_links = get_top_10_links(search_result)
